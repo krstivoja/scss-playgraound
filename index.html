@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sass to CSS Playground</title>
+</head>
+
+<body>
+    <h1>Sass to CSS Playground</h1>
+    <div>
+        <textarea id="sassInput" rows="10" cols="50" placeholder="Enter your Sass here...">
+.test {
+  background: red;
+  &-2 { 
+    padding: 2rem; 
+  }
+}
+    </textarea>
+    </div>
+    <div>
+        <textarea id="cssOutput" rows="10" cols="50" placeholder="CSS Output..." readonly></textarea>
+    </div>
+    <div>
+        <textarea id="errorOutput" rows="5" cols="50" placeholder="Error Log..." readonly></textarea>
+    </div>
+
+    <script type="module">
+        async function compileSass() {
+            try {
+                const sass = await import('https://jspm.dev/sass');
+                const sassInput = document.getElementById('sassInput').value;
+                const result = sass.compileString(sassInput);
+                document.getElementById('cssOutput').value = result.css;
+                document.getElementById('errorOutput').value = ''; // Clear any previous errors
+            } catch (error) {
+                document.getElementById('errorOutput').value = error.message;
+            }
+        }
+
+        document.getElementById('sassInput').addEventListener('input', compileSass);
+
+        // Initial compilation on page load
+        compileSass();
+    </script>
+</body>
+
+</html>

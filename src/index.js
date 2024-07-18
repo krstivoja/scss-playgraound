@@ -1,6 +1,9 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import App from './App';
+import './styles.scss';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+document.addEventListener('DOMContentLoaded', () => {
+    const rootElement = document.getElementById('scss-playground-root');
+    const root = createRoot(rootElement);
+    root.render(<App />);
+});

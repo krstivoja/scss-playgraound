@@ -1,0 +1,1 @@
+{"version":3,"file":"index.css","mappings":";;;AAAA;EACI;AACJ,C","sources":["webpack://scss-playgraound/./src/styles.scss"],"sourcesContent":["body{\n    background-color: red;\n}"],"names":[],"sourceRoot":""}

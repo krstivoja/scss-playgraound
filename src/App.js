@@ -34,6 +34,16 @@ const App = () => {
         };
     }, [content, currentFile]);
 
+    useEffect(() => {
+        let timeout;
+        if (snackbarMessage && !errorOutput) {
+            timeout = setTimeout(() => {
+                setSnackbarMessage('');
+            }, 3000); // Hide Snackbar after 3 seconds if no error
+        }
+        return () => clearTimeout(timeout);
+    }, [snackbarMessage, errorOutput]);
+
     const loadFile = (file) => {
         fetch(scssPlayground.apiUrl + 'file/' + file)
             .then(response => response.text())
@@ -86,6 +96,7 @@ const App = () => {
                 });
         } catch (error) {
             setErrorOutput(error.message);
+            setSnackbarMessage('Error occurred while saving CSS file'); // Set Snackbar message for error
         }
     };
 
@@ -122,8 +133,13 @@ const App = () => {
             </div>
 
             {snackbarMessage && (
-                <Snackbar onDismiss={() => setSnackbarMessage('')}>
-                    {snackbarMessage}
+                <Snackbar
+                    onDismiss={() => setSnackbarMessage('')}
+                    style={{ backgroundColor: errorOutput ? 'red' : 'black' }} // Set background color based on error presence
+                >
+                    <pre style={{ whiteSpace: 'pre-wrap' }}>
+                        {errorOutput ? errorOutput : snackbarMessage}
+                    </pre>
                 </Snackbar>
             )}
         </div>

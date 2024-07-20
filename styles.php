@@ -52,6 +52,14 @@ function enqueue_scss_playground_scripts($hook)
 
     // Enqueue Tailwind CSS
     wp_enqueue_script('tailwindcss', 'https://cdn.tailwindcss.com', array(), null, true);
+
+    // Enqueue Gutenberg block library styles if Gutenberg is disabled
+    wp_enqueue_style(
+        'wp-editor',
+        includes_url('css/dist/editor/style.css'),
+        [],
+        filemtime(ABSPATH . WPINC . '/css/dist/editor/style.css')
+    );
 }
 
 // Register REST API endpoints

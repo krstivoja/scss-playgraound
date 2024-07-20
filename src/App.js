@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
+import { Snackbar } from '@wordpress/components'; // Import Snackbar
 
 const App = () => {
     const [files, setFiles] = useState([]);
     const [currentFile, setCurrentFile] = useState('');
     const [content, setContent] = useState('');
     const [errorOutput, setErrorOutput] = useState('');
+    const [snackbarMessage, setSnackbarMessage] = useState(''); // State for Snackbar message
 
     useEffect(() => {
         fetch(scssPlayground.apiUrl + 'files')
@@ -58,7 +60,7 @@ const App = () => {
         }).then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('SCSS file saved successfully');
+                    setSnackbarMessage('SCSS file saved successfully'); // Set Snackbar message
                 }
             });
 
@@ -79,7 +81,7 @@ const App = () => {
             }).then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('CSS file saved successfully');
+                        setSnackbarMessage('CSS file saved successfully'); // Set Snackbar message
                     }
                 });
         } catch (error) {
@@ -118,6 +120,12 @@ const App = () => {
                     <textarea rows="5" cols="50" value={errorOutput} readOnly />
                 </div>
             </div>
+
+            {snackbarMessage && (
+                <Snackbar onDismiss={() => setSnackbarMessage('')}>
+                    {snackbarMessage}
+                </Snackbar>
+            )}
         </div>
     );
 };

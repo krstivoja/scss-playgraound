@@ -91,7 +91,7 @@ function get_scss_file($request)
 function save_scss_file($request)
 {
     $filename = sanitize_file_name($request['filename']);
-    $content = wp_unslash($request['content']); // Properly handle slashes
+    $content = wp_unslash($request->get_param('content')); // Properly handle slashes
     $upload_dir = wp_upload_dir();
     $scss_dir = $upload_dir['basedir'] . '/scss';
     $file_path = $scss_dir . '/' . $filename;

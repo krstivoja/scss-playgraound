@@ -145,7 +145,7 @@ const App = () => {
                                 key={file}
                                 className={`flex justify-between items-center border border-slate-300 ${file === currentFile ? 'bg-slate-300' : ''}`}
                             >
-                                <span onClick={() => loadFile(file)}>{file}</span>
+                                <span className='cursor-pointer flex-1' onClick={() => loadFile(file)}>{file}</span>
                                 <Button isDestructive onClick={() => deleteFile(file)}>Delete</Button> {/* Delete File Button */}
                             </li>
                         ))}

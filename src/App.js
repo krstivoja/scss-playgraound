@@ -16,7 +16,7 @@ const App = () => {
         fetch(scssPlayground.apiUrl + 'file/' + file)
             .then(response => response.text())
             .then(data => {
-                const formattedContent = data.replace(/\\n/g, '\n').replace(/\\r/g, '\r');
+                const formattedContent = data.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/^"|"$/g, '');
                 setCurrentFile(file);
                 setContent(formattedContent);
             });

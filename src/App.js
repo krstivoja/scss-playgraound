@@ -70,6 +70,7 @@ const App = () => {
         }).then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    setErrorOutput(''); // Clear error output on success
                     setSnackbarMessage('SCSS file saved successfully'); // Set Snackbar message
                 }
             });
@@ -91,6 +92,7 @@ const App = () => {
             }).then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        setErrorOutput(''); // Clear error output on success
                         setSnackbarMessage('CSS file saved successfully'); // Set Snackbar message
                     }
                 });
@@ -125,10 +127,6 @@ const App = () => {
                         value={content}
                         onChange={(value) => setContent(value)}
                     />
-                    <button onClick={saveFile}>Save</button>
-
-                    <h2>Error Log</h2>
-                    <textarea rows="5" cols="50" value={errorOutput} readOnly />
                 </div>
             </div>
 

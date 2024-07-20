@@ -17,7 +17,8 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@wordpress/scripts": "^27.9.0"
+    "@wordpress/scripts": "^27.9.0",
+    "sass": "^1.77.8"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0"

@@ -65,6 +65,10 @@ add_action('rest_api_init', function () {
         'methods' => 'GET',
         'callback' => 'get_scss_file',
     ));
+    register_rest_route('scss-playground/v1', '/css-file', array(
+        'methods' => 'POST',
+        'callback' => 'save_css_file',
+    ));
 });
 
 function get_scss_files()
@@ -95,6 +99,20 @@ function save_scss_file($request)
     $upload_dir = wp_upload_dir();
     $scss_dir = $upload_dir['basedir'] . '/scss';
     $file_path = $scss_dir . '/' . $filename;
+    file_put_contents($file_path, $content);
+    return array('success' => true);
+}
+
+function save_css_file($request)
+{
+    $filename = sanitize_file_name($request['filename']);
+    $content = wp_unslash($request->get_param('content')); // Properly handle slashes
+    $upload_dir = wp_upload_dir();
+    $css_dir = $upload_dir['basedir'] . '/css';
+    if (!file_exists($css_dir)) {
+        mkdir($css_dir, 0755, true);
+    }
+    $file_path = $css_dir . '/' . $filename;
     file_put_contents($file_path, $content);
     return array('success' => true);
 }

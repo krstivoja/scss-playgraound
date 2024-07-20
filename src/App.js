@@ -5,6 +5,7 @@ const App = () => {
     const [files, setFiles] = useState([]);
     const [currentFile, setCurrentFile] = useState('');
     const [content, setContent] = useState('');
+    const [errorOutput, setErrorOutput] = useState('');
 
     useEffect(() => {
         fetch(scssPlayground.apiUrl + 'files')
@@ -22,9 +23,11 @@ const App = () => {
             });
     };
 
-    const saveFile = () => {
+    const saveFile = async () => {
         const formattedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        fetch(scssPlayground.apiUrl + 'file', {
+
+        // Save SCSS file
+        await fetch(scssPlayground.apiUrl + 'file', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,9 +39,33 @@ const App = () => {
         }).then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('File saved successfully');
+                    alert('SCSS file saved successfully');
                 }
             });
+
+        // Compile SCSS to CSS and save CSS file
+        try {
+            const sass = await import('https://jspm.dev/sass');
+            const result = sass.compileString(content);
+            const cssFilename = currentFile.replace(/\.scss$/, '.css');
+            await fetch(scssPlayground.apiUrl + 'css-file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: cssFilename,
+                    content: result.css,
+                }),
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('CSS file saved successfully');
+                    }
+                });
+        } catch (error) {
+            setErrorOutput(error.message);
+        }
     };
 
     return (
@@ -61,6 +88,10 @@ const App = () => {
                     onChange={(value) => setContent(value)}
                 />
                 <button onClick={saveFile}>Save</button>
+            </div>
+            <div>
+                <h2>Error Log</h2>
+                <textarea rows="5" cols="50" value={errorOutput} readOnly />
             </div>
         </div>
     );

@@ -10,8 +10,27 @@ const App = () => {
     useEffect(() => {
         fetch(scssPlayground.apiUrl + 'files')
             .then(response => response.json())
-            .then(data => setFiles(data));
+            .then(data => {
+                setFiles(data);
+                if (data.length > 0) {
+                    loadFile(data[0]); // Load the first file
+                }
+            });
     }, []);
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                saveFile();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [content, currentFile]);
 
     const loadFile = (file) => {
         fetch(scssPlayground.apiUrl + 'file/' + file)
@@ -70,12 +89,18 @@ const App = () => {
 
     return (
         <div>
-            <h1>SCSS Playground</h1>
+            <h1 className='text-5xl font-bold my-8'>SCSS Playground</h1>
             <div className="flex gap-12">
                 <div className='w-1/4 bg-white'>
                     <ul>
                         {files.map(file => (
-                            <li key={file} onClick={() => loadFile(file)}>{file}</li>
+                            <li
+                                key={file}
+                                onClick={() => loadFile(file)}
+                                className={file === currentFile ? 'bg-slate-300' : ''}
+                            >
+                                {file}
+                            </li>
                         ))}
                     </ul>
                 </div>

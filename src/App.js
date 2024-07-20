@@ -114,6 +114,24 @@ const App = () => {
         }
     };
 
+    const deleteFile = async (file) => {
+        await fetch(scssPlayground.apiUrl + 'file/' + file, {
+            method: 'DELETE',
+        }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setFiles(files.filter(f => f !== file));
+                    if (currentFile === file) {
+                        setCurrentFile('');
+                        setContent('');
+                    }
+                    setSnackbarMessage('File deleted successfully');
+                } else {
+                    setSnackbarMessage('Error deleting file');
+                }
+            });
+    };
+
     return (
         <div>
             <h1 className='text-5xl font-bold my-8'>SCSS Playground</h1>
@@ -123,10 +141,10 @@ const App = () => {
                         {files.map(file => (
                             <li
                                 key={file}
-                                onClick={() => loadFile(file)}
                                 className={file === currentFile ? 'bg-slate-300' : ''}
                             >
-                                {file}
+                                <span onClick={() => loadFile(file)}>{file}</span>
+                                <Button isDestructive onClick={() => deleteFile(file)}>Delete</Button> {/* Delete File Button */}
                             </li>
                         ))}
                     </ul>

@@ -80,6 +80,10 @@ add_action('rest_api_init', function () {
         'methods' => 'GET',
         'callback' => 'get_scss_file',
     ));
+    register_rest_route('scss-playground/v1', '/file/(?P<filename>[^/]+)', array(
+        'methods' => 'DELETE',
+        'callback' => 'delete_scss_file',
+    ));
     register_rest_route('scss-playground/v1', '/css-file', array(
         'methods' => 'POST',
         'callback' => 'save_css_file',
@@ -130,5 +134,20 @@ function save_css_file($request)
     $file_path = $css_dir . '/' . $filename;
     file_put_contents($file_path, $content);
     return array('success' => true);
+}
+
+function delete_scss_file($request)
+{
+    $filename = sanitize_file_name($request['filename']);
+    $upload_dir = wp_upload_dir();
+    $scss_dir = $upload_dir['basedir'] . '/wpeditor/scss';
+    $file_path = $scss_dir . '/' . $filename;
+
+    if (file_exists($file_path)) {
+        unlink($file_path);
+        return array('success' => true);
+    } else {
+        return new WP_Error('file_not_found', 'File not found', array('status' => 404));
+    }
 }
 ?>

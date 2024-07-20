@@ -70,6 +70,23 @@ function enqueue_scss_playground_scripts($hook)
     );
 }
 
+// Enqueue CSS files on the frontend
+add_action('wp_enqueue_scripts', 'enqueue_frontend_css_files');
+function enqueue_frontend_css_files()
+{
+    // Enqueue all CSS files from the uploads/wpeditor/css directory
+    $upload_dir = wp_upload_dir();
+    $css_dir = $upload_dir['basedir'] . '/wpeditor/css';
+    if (is_dir($css_dir)) {
+        $css_files = glob($css_dir . '/*.css');
+        foreach ($css_files as $css_file) {
+            $css_url = site_url('/wp-content/uploads/wpeditor/css/' . basename($css_file));
+            wp_register_style('scss-playground-css-' . basename($css_file), $css_url);
+            wp_enqueue_style('scss-playground-css-' . basename($css_file));
+        }
+    }
+}
+
 // Register REST API endpoints
 add_action('rest_api_init', function () {
     register_rest_route('scss-playground/v1', '/files', array(

@@ -115,33 +115,35 @@ const App = () => {
     };
 
     const deleteFile = async (file) => {
-        await fetch(scssPlayground.apiUrl + 'file/' + file, {
-            method: 'DELETE',
-        }).then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    setFiles(files.filter(f => f !== file));
-                    if (currentFile === file) {
-                        setCurrentFile('');
-                        setContent('');
+        if (window.confirm(`Do you want to delete "${file}"?`)) { // Confirmation alert
+            await fetch(scssPlayground.apiUrl + 'file/' + file, {
+                method: 'DELETE',
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        setFiles(files.filter(f => f !== file));
+                        if (currentFile === file) {
+                            setCurrentFile('');
+                            setContent('');
+                        }
+                        setSnackbarMessage('File deleted successfully');
+                    } else {
+                        setSnackbarMessage('Error deleting file');
                     }
-                    setSnackbarMessage('File deleted successfully');
-                } else {
-                    setSnackbarMessage('Error deleting file');
-                }
-            });
+                });
+        }
     };
 
     return (
         <div>
-            <h1 className='text-5xl font-bold my-8'>SCSS Playground</h1>
+            <h1 className='text-5xl font-bold my-8 h-['>SCSS Playground</h1>
             <div className="flex gap-12">
                 <div className='w-1/4 bg-white'>
                     <ul>
                         {files.map(file => (
                             <li
                                 key={file}
-                                className={file === currentFile ? 'bg-slate-300' : ''}
+                                className={`flex justify-between items-center border border-slate-300 ${file === currentFile ? 'bg-slate-300' : ''}`}
                             >
                                 <span onClick={() => loadFile(file)}>{file}</span>
                                 <Button isDestructive onClick={() => deleteFile(file)}>Delete</Button> {/* Delete File Button */}
@@ -151,9 +153,9 @@ const App = () => {
                     <Button isPrimary onClick={() => setIsModalOpen(true)}>+ Add New</Button> {/* Add New File Button */}
                 </div>
 
-                <div className='flex-1'>
+                <div className='flex-1 border border-black border-solid'>
                     <Editor
-                        height="30vh"
+                        height={window.innerHeight - 150}
                         language="scss"
                         value={content}
                         onChange={(value) => setContent(value)}

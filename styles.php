@@ -54,6 +54,10 @@ function enqueue_scss_playground_scripts($hook)
         'apiUrl' => home_url('/wp-json/scss-playground/v1/')
     ));
 
+    // Enqueue the CSS file
+    $main_css_url = plugins_url('frontend/index.css', __FILE__);
+    wp_enqueue_style('scss-playground-css', $main_css_url, array(), null);
+
     // Enqueue Tailwind CSS
     wp_enqueue_script('tailwindcss', 'https://cdn.tailwindcss.com', array(), null, true);
 

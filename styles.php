@@ -1,19 +1,23 @@
 <?php
 /*
 Plugin Name: SCSS Playground
-Description: A plugin to read and write SCSS files in the wp-content/uploads/scss/ directory using React and Monaco Editor.
+Description: A plugin to read and write SCSS files in the wp-content/uploads/wpeditor/scss/ directory using React and Monaco Editor.
 Version: 1.0
 Author: Your Name
 */
 
-// Create the uploads/scss directory if it doesn't exist
+// Create the uploads/wpeditor/scss and uploads/wpeditor/css directories if they don't exist
 register_activation_hook(__FILE__, 'create_scss_directory');
 function create_scss_directory()
 {
     $upload_dir = wp_upload_dir();
-    $scss_dir = $upload_dir['basedir'] . '/scss';
+    $scss_dir = $upload_dir['basedir'] . '/wpeditor/scss';
     if (!file_exists($scss_dir)) {
         mkdir($scss_dir, 0755, true);
+    }
+    $css_dir = $upload_dir['basedir'] . '/wpeditor/css';
+    if (!file_exists($css_dir)) {
+        mkdir($css_dir, 0755, true);
     }
 }
 
@@ -85,7 +89,7 @@ add_action('rest_api_init', function () {
 function get_scss_files()
 {
     $upload_dir = wp_upload_dir();
-    $scss_dir = $upload_dir['basedir'] . '/scss';
+    $scss_dir = $upload_dir['basedir'] . '/wpeditor/scss';
     $files = array_diff(scandir($scss_dir), array('..', '.'));
     return array_values($files);
 }
@@ -94,7 +98,7 @@ function get_scss_file($request)
 {
     $filename = sanitize_file_name($request['filename']);
     $upload_dir = wp_upload_dir();
-    $scss_dir = $upload_dir['basedir'] . '/scss';
+    $scss_dir = $upload_dir['basedir'] . '/wpeditor/scss';
     $file_path = $scss_dir . '/' . $filename;
     if (file_exists($file_path)) {
         return file_get_contents($file_path);
@@ -108,7 +112,7 @@ function save_scss_file($request)
     $filename = sanitize_file_name($request['filename']);
     $content = wp_unslash($request->get_param('content')); // Properly handle slashes
     $upload_dir = wp_upload_dir();
-    $scss_dir = $upload_dir['basedir'] . '/scss';
+    $scss_dir = $upload_dir['basedir'] . '/wpeditor/scss';
     $file_path = $scss_dir . '/' . $filename;
     file_put_contents($file_path, $content);
     return array('success' => true);
@@ -119,7 +123,7 @@ function save_css_file($request)
     $filename = sanitize_file_name($request['filename']);
     $content = wp_unslash($request->get_param('content')); // Properly handle slashes
     $upload_dir = wp_upload_dir();
-    $css_dir = $upload_dir['basedir'] . '/css';
+    $css_dir = $upload_dir['basedir'] . '/wpeditor/css';
     if (!file_exists($css_dir)) {
         mkdir($css_dir, 0755, true);
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import { Snackbar } from '@wordpress/components'; // Import Snackbar
+import { Snackbar, Button, Modal, TextControl } from '@wordpress/components'; // Import necessary components
 
 const App = () => {
     const [files, setFiles] = useState([]);
@@ -8,6 +8,8 @@ const App = () => {
     const [content, setContent] = useState('');
     const [errorOutput, setErrorOutput] = useState('');
     const [snackbarMessage, setSnackbarMessage] = useState(''); // State for Snackbar message
+    const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+    const [newFileName, setNewFileName] = useState(''); // State for new file name
 
     useEffect(() => {
         fetch(scssPlayground.apiUrl + 'files')
@@ -102,6 +104,16 @@ const App = () => {
         }
     };
 
+    const createNewFile = () => {
+        if (newFileName) {
+            setFiles([...files, newFileName]);
+            setCurrentFile(newFileName);
+            setContent('');
+            setIsModalOpen(false);
+            setNewFileName('');
+        }
+    };
+
     return (
         <div>
             <h1 className='text-5xl font-bold my-8'>SCSS Playground</h1>
@@ -118,6 +130,7 @@ const App = () => {
                             </li>
                         ))}
                     </ul>
+                    <Button isPrimary onClick={() => setIsModalOpen(true)}>+ Add New</Button> {/* Add New File Button */}
                 </div>
 
                 <div className='flex-1'>
@@ -139,6 +152,20 @@ const App = () => {
                         {errorOutput ? errorOutput : snackbarMessage}
                     </pre>
                 </Snackbar>
+            )}
+
+            {isModalOpen && (
+                <Modal
+                    title="Create New File"
+                    onRequestClose={() => setIsModalOpen(false)}
+                >
+                    <TextControl
+                        label="File Name"
+                        value={newFileName}
+                        onChange={(value) => setNewFileName(value)}
+                    />
+                    <Button isPrimary onClick={createNewFile}>Create</Button>
+                </Modal>
             )}
         </div>
     );

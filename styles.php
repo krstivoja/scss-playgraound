@@ -49,6 +49,9 @@ function enqueue_scss_playground_scripts($hook)
     wp_localize_script('scss-playground-react', 'scssPlayground', array(
         'apiUrl' => home_url('/wp-json/scss-playground/v1/')
     ));
+
+    // Enqueue Tailwind CSS
+    wp_enqueue_script('tailwindcss', 'https://cdn.tailwindcss.com', array(), null, true);
 }
 
 // Register REST API endpoints

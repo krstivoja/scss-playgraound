@@ -71,27 +71,27 @@ const App = () => {
     return (
         <div>
             <h1>SCSS Playground</h1>
-            <div>
-                <h2>Files</h2>
-                <ul>
-                    {files.map(file => (
-                        <li key={file} onClick={() => loadFile(file)}>{file}</li>
-                    ))}
-                </ul>
-            </div>
-            <div>
-                <h2>Editor</h2>
-                <Editor
-                    height="30vh"
-                    language="scss"
-                    value={content}
-                    onChange={(value) => setContent(value)}
-                />
-                <button onClick={saveFile}>Save</button>
-            </div>
-            <div>
-                <h2>Error Log</h2>
-                <textarea rows="5" cols="50" value={errorOutput} readOnly />
+            <div className="flex gap-12">
+                <div className='w-1/4 bg-white'>
+                    <ul>
+                        {files.map(file => (
+                            <li key={file} onClick={() => loadFile(file)}>{file}</li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className='flex-1'>
+                    <Editor
+                        height="30vh"
+                        language="scss"
+                        value={content}
+                        onChange={(value) => setContent(value)}
+                    />
+                    <button onClick={saveFile}>Save</button>
+
+                    <h2>Error Log</h2>
+                    <textarea rows="5" cols="50" value={errorOutput} readOnly />
+                </div>
             </div>
         </div>
     );

@@ -638,194 +638,54 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _ScssEditor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ScssEditor */ "./src/ScssEditor.js");
+/* harmony import */ var _monaco_editor_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @monaco-editor/react */ "./node_modules/@monaco-editor/react/dist/index.mjs");
 
 
 
 const App = () => {
-  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", null, "SCSS Playground"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ScssEditor__WEBPACK_IMPORTED_MODULE_1__["default"], null));
+  const [files, setFiles] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [currentFile, setCurrentFile] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [content, setContent] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    fetch(scssPlayground.apiUrl + 'files').then(response => response.json()).then(data => setFiles(data));
+  }, []);
+  const loadFile = file => {
+    fetch(scssPlayground.apiUrl + 'file/' + file).then(response => response.text()).then(data => {
+      const formattedContent = data.replace(/\\n/g, '\n').replace(/\\r/g, '\r');
+      setCurrentFile(file);
+      setContent(formattedContent);
+    });
+  };
+  const saveFile = () => {
+    const formattedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    fetch(scssPlayground.apiUrl + 'file', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        filename: currentFile,
+        content: formattedContent
+      })
+    }).then(response => response.json()).then(data => {
+      if (data.success) {
+        alert('File saved successfully');
+      }
+    });
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", null, "SCSS Playground"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", null, "Files"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("ul", null, files.map(file => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
+    key: file,
+    onClick: () => loadFile(file)
+  }, file)))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", null, "Editor"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_monaco_editor_react__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    height: "30vh",
+    language: "scss",
+    value: content,
+    onChange: value => setContent(value)
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: saveFile
+  }, "Save")));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
-
-/***/ }),
-
-/***/ "./src/ScssEditor.js":
-/*!***************************!*\
-  !*** ./src/ScssEditor.js ***!
-  \***************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _monaco_editor_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @monaco-editor/react */ "./node_modules/@monaco-editor/react/dist/index.mjs");
-/* harmony import */ var _saveFile__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./saveFile */ "./src/saveFile.js");
-/* harmony import */ var _loadFiles__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./loadFiles */ "./src/loadFiles.js");
-
-
-
-
-
-const ScssEditor = ({
-  width = "800px",
-  height = "600px",
-  language = "scss",
-  theme = "vs-dark"
-}) => {
-  const [fileName, setFileName] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
-  const [fileContent, setFileContent] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
-  const [fileList, setFileList] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
-  const editorRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    (0,_loadFiles__WEBPACK_IMPORTED_MODULE_3__["default"])().then(files => setFileList(files)).catch(error => console.error('Error loading files:', error));
-  }, []);
-  function handleEditorDidMount(editor) {
-    editorRef.current = editor;
-  }
-  const handleSave = () => {
-    if (fileName) {
-      const content = editorRef.current.getValue();
-      (0,_saveFile__WEBPACK_IMPORTED_MODULE_2__["default"])(fileName, content);
-    } else {
-      alert('Please enter a file name.');
-    }
-  };
-  const handleFileSelect = e => {
-    const selectedFile = e.target.value;
-    if (selectedFile) {
-      fetch(`${scssPlayground.ajax_url}?action=load_scss_file&file_name=${selectedFile}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-WP-Nonce': scssPlayground.nonce
-        }
-      }).then(response => response.json()).then(data => {
-        if (data.success) {
-          setFileName(selectedFile);
-          setFileContent(data.content);
-          editorRef.current.setValue(data.content);
-        } else {
-          alert('Error loading file: ' + data.data);
-        }
-      }).catch(error => {
-        console.error('Error loading file:', error);
-        alert('Error loading file: ' + error.message);
-      });
-    }
-  };
-  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
-    htmlFor: "fileName"
-  }, "File Name: "), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    type: "text",
-    id: "fileName",
-    value: fileName,
-    onChange: e => setFileName(e.target.value)
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: handleSave
-  }, "Save")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
-    htmlFor: "fileSelect"
-  }, "Select File: "), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
-    id: "fileSelect",
-    onChange: handleFileSelect
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
-    value: ""
-  }, "Select a file"), fileList.map(file => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
-    key: file,
-    value: file
-  }, file)))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_monaco_editor_react__WEBPACK_IMPORTED_MODULE_1__["default"], {
-    height: height,
-    width: width,
-    language: language,
-    theme: theme,
-    value: fileContent,
-    onMount: handleEditorDidMount
-  }));
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ScssEditor);
-
-/***/ }),
-
-/***/ "./src/loadFiles.js":
-/*!**************************!*\
-  !*** ./src/loadFiles.js ***!
-  \**************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-const loadFiles = () => {
-  return fetch(`${scssPlayground.ajax_url}/wp-json/scss-playground/v1/load-files`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include' // Ensure cookies are included in the request
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.statusText}`);
-    }
-    return response.json();
-  }).then(data => {
-    return data;
-  }).catch(error => {
-    throw new Error('Error loading files: ' + error.message);
-  });
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (loadFiles);
-
-/***/ }),
-
-/***/ "./src/saveFile.js":
-/*!*************************!*\
-  !*** ./src/saveFile.js ***!
-  \*************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-const saveFile = (fileName, content) => {
-  fetch(`${scssPlayground.ajax_url}/wp-json/scss-playground/v1/save-file`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include',
-    // Ensure cookies are included in the request
-    body: JSON.stringify({
-      file_name: fileName,
-      content: content
-    })
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.statusText}`);
-    }
-    return response.json();
-  }).then(data => {
-    alert('File saved successfully');
-  }).catch(error => {
-    alert('Error saving file: ' + error.message);
-  });
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (saveFile);
-
-/***/ }),
-
-/***/ "./src/styles.scss":
-/*!*************************!*\
-  !*** ./src/styles.scss ***!
-  \*************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
 
 /***/ }),
 
@@ -1186,16 +1046,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
 /* harmony import */ var _App__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./App */ "./src/App.js");
-/* harmony import */ var _styles_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./styles.scss */ "./src/styles.scss");
 
 
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  const rootElement = document.getElementById('scss-playground-root');
-  const root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(rootElement);
-  root.render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_App__WEBPACK_IMPORTED_MODULE_2__["default"], null));
-});
+const container = document.getElementById('scss-playground-root');
+const root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(container);
+root.render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_App__WEBPACK_IMPORTED_MODULE_2__["default"], null));
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map

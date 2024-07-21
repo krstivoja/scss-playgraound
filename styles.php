@@ -109,10 +109,6 @@ add_action('rest_api_init', function () {
         'methods' => 'POST',
         'callback' => 'save_css_file',
     ));
-    register_rest_route('scss-playground/v1', '/active-css', array(
-        'methods' => 'GET',
-        'callback' => 'get_active_css_file',
-    ));
 });
 
 function get_scss_files()
@@ -174,44 +170,5 @@ function delete_scss_file($request)
     } else {
         return new WP_Error('file_not_found', 'File not found', array('status' => 404));
     }
-}
-
-function get_active_css_file()
-{
-    // Logic to determine the active CSS file
-    $upload_dir = wp_upload_dir();
-    $css_dir = $upload_dir['basedir'] . '/wpeditor/css';
-    $css_files = glob($css_dir . '/*.css');
-    return array('active_css' => !empty($css_files) ? basename($css_files[0]) : null);
-}
-
-// Enqueue the script for hot reloading
-add_action('wp_footer', 'enqueue_hot_reload_script');
-function enqueue_hot_reload_script()
-{
-?>
-    <script>
-        let activeCssFile = '';
-
-        // Fetch the active CSS file
-        fetch('<?php echo esc_url(rest_url('scss-playground/v1/active-css')); ?>')
-            .then(response => response.json())
-            .then(data => {
-                if (data.active_css) {
-                    activeCssFile = data.active_css;
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = '<?php echo site_url('/wp-content/uploads/wpeditor/css/'); ?>' + activeCssFile;
-                    document.head.appendChild(link);
-
-                    // Listen for changes and reload the CSS
-                    const eventSource = new EventSource('<?php echo esc_url(rest_url('scss-playground/v1/file/' . activeCssFile)); ?>');
-                    eventSource.onmessage = function() {
-                        link.href = '<?php echo site_url('/wp-content/uploads/wpeditor/css/'); ?>' + activeCssFile + '?t=' + new Date().getTime(); // Add timestamp to force reload
-                    };
-                }
-            });
-    </script>
-<?php
 }
 ?>

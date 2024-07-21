@@ -164,14 +164,16 @@ const App = () => {
             </div>
 
             {snackbarMessage && (
-                <Snackbar
-                    onDismiss={() => setSnackbarMessage('')}
-                    style={{ backgroundColor: errorOutput ? 'red' : 'black' }} // Set background color based on error presence
-                >
-                    <pre style={{ whiteSpace: 'pre-wrap' }}>
-                        {errorOutput ? errorOutput : snackbarMessage}
-                    </pre>
-                </Snackbar>
+                <div className='fixed bottom-0 right-0 m-4'>
+                    <Snackbar
+                        onDismiss={() => setSnackbarMessage('')}
+                        style={{ backgroundColor: errorOutput ? 'red' : 'black' }} // Set background color based on error presence
+                    >
+                        <pre style={{ whiteSpace: 'pre-wrap' }}>
+                            {errorOutput ? errorOutput : snackbarMessage}
+                        </pre>
+                    </Snackbar>
+                </div>
             )}
 
             {isModalOpen && (

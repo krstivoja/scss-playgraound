@@ -50,18 +50,22 @@ const App = () => {
     useEffect(() => {
         broadcastChannel.onmessage = (event) => {
             const { cssFilename, cssContent } = event.data;
-            const styleSheet = document.querySelector(`link[href="/css/${cssFilename}"]`);
 
-            if (styleSheet) {
-                const newStyle = document.createElement('style');
-                newStyle.innerHTML = cssContent;
-                document.head.appendChild(newStyle);
-                document.head.removeChild(styleSheet);
-            } else {
-                const newLink = document.createElement('link');
-                newLink.rel = 'stylesheet';
-                newLink.href = `data:text/css;base64,${btoa(cssContent)}`;
-                document.head.appendChild(newLink);
+            // Check if the user is not an admin before injecting CSS
+            if (!isAdmin) { // Assuming isAdmin is a boolean indicating the user's role
+                const styleSheet = document.querySelector(`link[href="/css/${cssFilename}"]`);
+
+                if (styleSheet) {
+                    const newStyle = document.createElement('style');
+                    newStyle.innerHTML = cssContent;
+                    document.head.appendChild(newStyle);
+                    document.head.removeChild(styleSheet);
+                } else {
+                    const newLink = document.createElement('link');
+                    newLink.rel = 'stylesheet';
+                    newLink.href = `data:text/css;base64,${btoa(cssContent)}`;
+                    document.head.appendChild(newLink);
+                }
             }
         };
     }, []);

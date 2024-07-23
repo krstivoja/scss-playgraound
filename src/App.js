@@ -11,7 +11,7 @@ const App = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newFileName, setNewFileName] = useState('');
     const broadcastChannel = new BroadcastChannel('css_update_channel');
-    const isAdmin = false;
+    const isAdmin = true; // Set this to true if the user is an admin
 
     useEffect(() => {
         fetch(scssPlayground.apiUrl + 'files')

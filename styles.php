@@ -171,4 +171,37 @@ function delete_scss_file($request)
         return new WP_Error('file_not_found', 'File not found', array('status' => 404));
     }
 }
+
+
+
+add_action('wp_head', 'inject_inline_js');
+function inject_inline_js()
+{
+?>
+    <script>
+        const broadcastChannel = new BroadcastChannel('css_update_channel');
+
+        broadcastChannel.onmessage = (event) => {
+            const {
+                cssFilename,
+                cssContent
+            } = event.data;
+            const styleSheet = document.querySelector(`link[href="/css/${cssFilename}"]`);
+
+            if (styleSheet) {
+                const newStyle = document.createElement('style');
+                newStyle.innerHTML = cssContent;
+                document.head.appendChild(newStyle);
+                document.head.removeChild(styleSheet);
+            } else {
+                const newLink = document.createElement('link');
+                newLink.rel = 'stylesheet';
+                newLink.href = `data:text/css;base64,${btoa(cssContent)}`;
+                document.head.appendChild(newLink);
+            }
+        };
+    </script>
+<?php
+}
+
 ?>

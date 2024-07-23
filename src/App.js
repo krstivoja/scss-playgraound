@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import { Snackbar, Button, Modal, TextControl } from '@wordpress/components'; // Import necessary components
+import { Snackbar, Button, Modal, TextControl } from '@wordpress/components';
 
 const App = () => {
     const [files, setFiles] = useState([]);
     const [currentFile, setCurrentFile] = useState('');
     const [content, setContent] = useState('');
     const [errorOutput, setErrorOutput] = useState('');
-    const [snackbarMessage, setSnackbarMessage] = useState(''); // State for Snackbar message
-    const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
-    const [newFileName, setNewFileName] = useState(''); // State for new file name
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newFileName, setNewFileName] = useState('');
+    const broadcastChannel = new BroadcastChannel('css_update_channel');
 
     useEffect(() => {
         fetch(scssPlayground.apiUrl + 'files')
@@ -17,7 +18,7 @@ const App = () => {
             .then(data => {
                 setFiles(data);
                 if (data.length > 0) {
-                    loadFile(data[0]); // Load the first file
+                    loadFile(data[0]);
                 }
             });
     }, []);
@@ -41,10 +42,29 @@ const App = () => {
         if (snackbarMessage && !errorOutput) {
             timeout = setTimeout(() => {
                 setSnackbarMessage('');
-            }, 3000); // Hide Snackbar after 3 seconds if no error
+            }, 3000);
         }
         return () => clearTimeout(timeout);
     }, [snackbarMessage, errorOutput]);
+
+    useEffect(() => {
+        broadcastChannel.onmessage = (event) => {
+            const { cssFilename, cssContent } = event.data;
+            const styleSheet = document.querySelector(`link[href="/css/${cssFilename}"]`);
+
+            if (styleSheet) {
+                const newStyle = document.createElement('style');
+                newStyle.innerHTML = cssContent;
+                document.head.appendChild(newStyle);
+                document.head.removeChild(styleSheet);
+            } else {
+                const newLink = document.createElement('link');
+                newLink.rel = 'stylesheet';
+                newLink.href = `data:text/css;base64,${btoa(cssContent)}`;
+                document.head.appendChild(newLink);
+            }
+        };
+    }, []);
 
     const loadFile = (file) => {
         fetch(scssPlayground.apiUrl + 'file/' + file)
@@ -59,7 +79,6 @@ const App = () => {
     const saveFile = async () => {
         const formattedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-        // Save SCSS file
         await fetch(scssPlayground.apiUrl + 'file', {
             method: 'POST',
             headers: {
@@ -72,12 +91,11 @@ const App = () => {
         }).then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    setErrorOutput(''); // Clear error output on success
-                    setSnackbarMessage('SCSS file saved successfully'); // Set Snackbar message
+                    setErrorOutput('');
+                    setSnackbarMessage('SCSS file saved successfully');
                 }
             });
 
-        // Compile SCSS to CSS and save CSS file
         try {
             const sass = await import('https://jspm.dev/sass');
             const result = sass.compileString(content);
@@ -94,13 +112,14 @@ const App = () => {
             }).then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        setErrorOutput(''); // Clear error output on success
-                        setSnackbarMessage('CSS file saved successfully'); // Set Snackbar message
+                        setErrorOutput('');
+                        setSnackbarMessage('CSS file saved successfully');
+                        broadcastChannel.postMessage({ cssFilename, cssContent: result.css });
                     }
                 });
         } catch (error) {
             setErrorOutput(error.message);
-            setSnackbarMessage('Error occurred while saving CSS file'); // Set Snackbar message for error
+            setSnackbarMessage('Error occurred while saving CSS file');
         }
     };
 
@@ -115,7 +134,7 @@ const App = () => {
     };
 
     const deleteFile = async (file) => {
-        if (window.confirm(`Do you want to delete "${file}"?`)) { // Confirmation alert
+        if (window.confirm(`Do you want to delete "${file}"?`)) {
             await fetch(scssPlayground.apiUrl + 'file/' + file, {
                 method: 'DELETE',
             }).then(response => response.json())
@@ -136,7 +155,7 @@ const App = () => {
 
     return (
         <div>
-            <h1 className='text-5xl font-bold my-8 h-['>SCSS Playground</h1>
+            <h1 className='text-5xl font-bold my-8'>SCSS Playground</h1>
             <div className="flex gap-12">
                 <div className='w-1/4 bg-white'>
                     <ul>
@@ -146,11 +165,11 @@ const App = () => {
                                 className={`flex justify-between items-center border border-slate-300 ${file === currentFile ? 'bg-slate-300' : ''}`}
                             >
                                 <span className='cursor-pointer flex-1' onClick={() => loadFile(file)}>{file}</span>
-                                <Button isDestructive onClick={() => deleteFile(file)}>Delete</Button> {/* Delete File Button */}
+                                <Button isDestructive onClick={() => deleteFile(file)}>Delete</Button>
                             </li>
                         ))}
                     </ul>
-                    <Button isPrimary onClick={() => setIsModalOpen(true)}>+ Add New</Button> {/* Add New File Button */}
+                    <Button isPrimary onClick={() => setIsModalOpen(true)}>+ Add New</Button>
                 </div>
 
                 <div className='flex-1 border border-black border-solid'>
@@ -167,7 +186,7 @@ const App = () => {
                 <div className='fixed bottom-0 right-0 m-4'>
                     <Snackbar
                         onDismiss={() => setSnackbarMessage('')}
-                        style={{ backgroundColor: errorOutput ? 'red' : 'black' }} // Set background color based on error presence
+                        style={{ backgroundColor: errorOutput ? 'red' : 'black' }}
                     >
                         <pre style={{ whiteSpace: 'pre-wrap' }}>
                             {errorOutput ? errorOutput : snackbarMessage}

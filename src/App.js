@@ -121,6 +121,9 @@ const App = () => {
             const result = sass.compileString(content, { style: 'compressed' }); // Use 'compressed' style for minification
             const cssFilename = currentFile.replace(/\.scss$/, '.css');
 
+            // Ensure the CSS is a single line
+            const singleLineCss = result.css.replace(/\n/g, '').replace(/\s+/g, ' ').trim();
+
             await fetch(scssPlayground.apiUrl + 'css-file', {
                 method: 'POST',
                 headers: {
@@ -128,14 +131,14 @@ const App = () => {
                 },
                 body: JSON.stringify({
                     filename: cssFilename,
-                    content: result.css, // Use the minified CSS from sass
+                    content: singleLineCss, // Use the single line CSS
                 }),
             }).then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         setErrorOutput('');
                         setSnackbarMessage('CSS file saved successfully');
-                        broadcastChannel.postMessage({ cssFilename, cssContent: result.css });
+                        broadcastChannel.postMessage({ cssFilename, cssContent: singleLineCss });
                     }
                 });
         } catch (error) {
@@ -143,7 +146,6 @@ const App = () => {
             setSnackbarMessage('Error occurred while saving CSS file');
         }
     };
-
     const createNewFile = () => {
         if (newFileName) {
             setFiles([...files, newFileName]);

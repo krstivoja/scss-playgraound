@@ -87,9 +87,29 @@ function enqueue_frontend_css_files()
     }
 }
 
-// Include REST API endpoints
-require_once plugin_dir_path(__FILE__) . 'inc/rest-endpoints.php';
-
+// Register REST API endpoints
+add_action('rest_api_init', function () {
+    register_rest_route('scss-playground/v1', '/files', array(
+        'methods' => 'GET',
+        'callback' => 'get_scss_files',
+    ));
+    register_rest_route('scss-playground/v1', '/file', array(
+        'methods' => 'POST',
+        'callback' => 'save_scss_file',
+    ));
+    register_rest_route('scss-playground/v1', '/file/(?P<filename>[^/]+)', array(
+        'methods' => 'GET',
+        'callback' => 'get_scss_file',
+    ));
+    register_rest_route('scss-playground/v1', '/file/(?P<filename>[^/]+)', array(
+        'methods' => 'DELETE',
+        'callback' => 'delete_scss_file',
+    ));
+    register_rest_route('scss-playground/v1', '/css-file', array(
+        'methods' => 'POST',
+        'callback' => 'save_css_file',
+    ));
+});
 
 function get_scss_files()
 {
@@ -99,27 +119,28 @@ function get_scss_files()
     return array_values($files);
 }
 
-
-
 function get_scss_file($request)
 {
     $filename = sanitize_file_name($request['filename']);
     $upload_dir = wp_upload_dir();
     $scss_dir = $upload_dir['basedir'] . '/wpeditor/scss';
     $file_path = $scss_dir . '/' . $filename;
-
-    if (!file_exists($file_path)) {
-        error_log("File not found: " . $file_path); // Log the error
-        return new WP_Error('file_not_found', 'File not found: ' . $filename, array('status' => 404));
+    if (file_exists($file_path)) {
+        return file_get_contents($file_path);
+    } else {
+        return new WP_Error('file_not_found', 'File not found', array('status' => 404));
     }
+}
 
-    $content = file_get_contents($file_path);
-    if ($content === false) {
-        error_log("Failed to read file: " . $file_path); // Log the error
-        return new WP_Error('file_read_error', 'Failed to read file: ' . $filename, array('status' => 500));
-    }
-
-    return $content;
+function save_scss_file($request)
+{
+    $filename = sanitize_file_name($request['filename']);
+    $content = wp_unslash($request->get_param('content')); // Properly handle slashes
+    $upload_dir = wp_upload_dir();
+    $scss_dir = $upload_dir['basedir'] . '/wpeditor/scss';
+    $file_path = $scss_dir . '/' . $filename;
+    file_put_contents($file_path, $content);
+    return array('success' => true);
 }
 
 function save_css_file($request)
@@ -136,7 +157,7 @@ function save_css_file($request)
     return array('success' => true);
 }
 
-function delete_file($request)
+function delete_scss_file($request)
 {
     $filename = sanitize_file_name($request['filename']);
     $upload_dir = wp_upload_dir();
@@ -144,19 +165,43 @@ function delete_file($request)
     $file_path = $scss_dir . '/' . $filename;
 
     if (file_exists($file_path)) {
-        if (unlink($file_path)) {
-            return array('success' => true, 'message' => 'File deleted successfully');
-        } else {
-            error_log("Failed to delete file: " . $file_path); // Log the error
-            return new WP_Error('file_delete_error', 'Failed to delete file', array('status' => 500));
-        }
+        unlink($file_path);
+        return array('success' => true);
+    } else {
+        return new WP_Error('file_not_found', 'File not found', array('status' => 404));
     }
-
-    error_log("File not found for deletion: " . $file_path); // Log the error
-    return new WP_Error('file_not_found', 'File not found', array('status' => 404));
 }
 
 
-require_once plugin_dir_path(__FILE__) . 'inc/hotreload.php';
+
+add_action('wp_head', 'inject_inline_js');
+function inject_inline_js()
+{
+?>
+    <script>
+        const broadcastChannel = new BroadcastChannel('css_update_channel');
+
+        broadcastChannel.onmessage = (event) => {
+            const {
+                cssFilename,
+                cssContent
+            } = event.data;
+            const styleSheet = document.querySelector(`link[href="/css/${cssFilename}"]`);
+
+            if (styleSheet) {
+                const newStyle = document.createElement('style');
+                newStyle.innerHTML = cssContent;
+                document.head.appendChild(newStyle);
+                document.head.removeChild(styleSheet);
+            } else {
+                const newLink = document.createElement('link');
+                newLink.rel = 'stylesheet';
+                newLink.href = `data:text/css;base64,${btoa(cssContent)}`;
+                document.head.appendChild(newLink);
+            }
+        };
+    </script>
+<?php
+}
 
 ?>

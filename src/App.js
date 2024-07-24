@@ -73,11 +73,26 @@ const App = () => {
 
     const loadFile = (file) => {
         fetch(scssPlayground.apiUrl + 'file/' + file)
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text(); // Ensure we get plain text
+            })
             .then(data => {
-                const formattedContent = data.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/^"|"$/g, '');
+                // Replace escape sequences with actual characters
+                const formattedData = data
+                    .replace(/\\n/g, '\n') // Replace \n with actual new lines
+                    .replace(/\\\//g, '/') // Replace \/ with /
+                    .replace(/"/g, ''); // Remove surrounding quotes if necessary
+
                 setCurrentFile(file);
-                setContent(formattedContent);
+                setContent(formattedData); // Set the formatted content
+
+                // console.log(formattedData); // This should log the correctly formatted content
+            })
+            .catch(error => {
+                console.error('Error loading file:', error);
             });
     };
 

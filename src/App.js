@@ -118,8 +118,9 @@ const App = () => {
 
         try {
             const sass = await import('https://jspm.dev/sass');
-            const result = sass.compileString(content);
+            const result = sass.compileString(content, { style: 'compressed' }); // Use 'compressed' style for minification
             const cssFilename = currentFile.replace(/\.scss$/, '.css');
+
             await fetch(scssPlayground.apiUrl + 'css-file', {
                 method: 'POST',
                 headers: {
@@ -127,7 +128,7 @@ const App = () => {
                 },
                 body: JSON.stringify({
                     filename: cssFilename,
-                    content: result.css,
+                    content: result.css, // Use the minified CSS from sass
                 }),
             }).then(response => response.json())
                 .then(data => {
